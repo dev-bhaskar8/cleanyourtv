@@ -82,7 +82,7 @@ del() { echo "rm -f $DIR/$1 2>/dev/null; content delete --uri $URI/$1 2>/dev/nul
 CLEAR_WALLPAPERS="rm -f $DIR/wallpapers/*.[jJ][pP][gG] $DIR/wallpapers/*.[jJ][pP][eE][gG] $DIR/wallpapers/*.[pP][nN][gG] $DIR/wallpapers/*.[wW][eE][bB][pP] 2>/dev/null; content delete --uri $URI/wallpapers 2>/dev/null"
 
 if [ "${1:-}" = --reset ]; then
-  tv "mkdir -p $DIR 2>/dev/null; $(del config.json); $(del wallpaper.jpg); $(del wallpapers/captions.txt); $CLEAR_WALLPAPERS; printf '%s' '$REVISION' > $TMP-theme_revision; $(put theme_revision)" >/dev/null
+  tv "mkdir -p $DIR 2>/dev/null; $(del config.json); $(del wallpaper.jpg); $(del wallpaper.mp4); $(del wallpapers/captions.txt); $CLEAR_WALLPAPERS; printf '%s' '$REVISION' > $TMP-theme_revision; $(put theme_revision)" >/dev/null
   "$PY" -I theme_restart.py
   echo reset
   exit 0
@@ -136,6 +136,16 @@ if [ -f "$THEME/wallpaper.jpg" ]; then
   tv "$(put wallpaper.jpg)"
 else
   tv "$(del wallpaper.jpg)" >/dev/null
+fi
+# The video wallpaper: pushed like the picture, deleted when a theme carries none. A large one travels
+# base64 over the shell, so say how long it sat there rather than look stuck.
+if [ -f "$THEME/wallpaper.mp4" ]; then
+  SIZE=$(wc -c < "$THEME/wallpaper.mp4" | tr -d ' ')
+  [ "$SIZE" -gt 10485760 ] && echo "pushing wallpaper.mp4 ($SIZE bytes; this takes a while)" >&2
+  "$PY" -I b64push.py "$THEME/wallpaper.mp4" "$TMP-wallpaper.mp4"
+  tv "$(put wallpaper.mp4)"
+else
+  tv "$(del wallpaper.mp4)" >/dev/null
 fi
 tv "$CLEAR_WALLPAPERS" >/dev/null
 for NAME in $NAMES; do

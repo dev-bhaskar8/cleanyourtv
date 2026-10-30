@@ -162,6 +162,11 @@ final class WallpaperPlayer {
         if (drift != null) drift.cancel();
     }
 
+    /** The video wallpaper hides the picture while its own frames are on screen; any failure brings it back. */
+    void setHidden(boolean hidden) {
+        image.setVisibility(hidden ? View.GONE : View.VISIBLE);
+    }
+
     /** Drops the wallpaper texture when Home is hidden and Android asks the process to free memory. */
     void releaseForMemoryPressure() {
         if (current == null) return;

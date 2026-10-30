@@ -368,6 +368,12 @@
          a rotation. One animator sets the transform from its fraction and the GPU does the rest; nothing runs per
          frame on the CPU. reduced_motion turns it off. Can also be set with "wallpaper_motion": true in a theme. -->
     <bool name="wallpaper_motion">false</bool>
+    <!-- A theme can play its wallpaper.mp4 behind Home instead of the still picture: off unless the theme
+         also sets "wallpaper_video": true, and only when the file came along. The player is muted and
+         loops; it pauses whenever Home is not visible and is released under memory pressure like the
+         picture. The picture stays as Home's first frame and the fallback, so a TV without a decoder for
+         the file shows exactly what it showed before. -->
+    <bool name="wallpaper_video">false</bool>
     <!-- Rotating wallpapers grouped by the time of day, as JSON: {"morning": [file names], "evening": [...],
          "night": [...]}. While set, the rotation picks only from the group that fits now: morning from sunrise to
          noon, evening until half an hour after sunset, night the rest, with the sun at latitude and longitude (07:00
