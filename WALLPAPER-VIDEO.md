@@ -5,6 +5,28 @@ This branch carries the two wallpaper features the main launcher does not ship, 
 - **`wallpaper_motion`** — the still wallpaper slowly zooms and drifts while Home is visible (up to 8 % over about seven minutes and back), a Ken Burns pan with no per-frame allocation. Off under `reduced_motion`. Upstream as [PR #2733](https://github.com/Gathin23/cleanyourtv/pull/2733); this branch carries it underneath the video layer.
 - **`wallpaper_video`** — a theme's `wallpaper.mp4` plays behind Home, muted and looping, pushed like `wallpaper.jpg` (`tools/theme.sh`). The still picture stays as Home's first frame and the fallback: the video takes the screen only once its own first frame is up, and any failure — a file the TV will not decode, a decoder error — leaves the picture exactly as it was. The player pauses whenever Home is not visible and releases under memory pressure; no new permissions, no manifest change, no network.
 
+## Rotating several clips (`videos/`)
+
+A theme with a `videos/` folder beside its `wallpaper.mp4` plays those clips instead of the single file:
+
+- Every `.mp4` in `videos/` plays once, then the next one starts, and the last hands back to the first.
+  The order is drawn once per Home start, so each start opens on a different clip.
+- A clip the decoder refuses is dropped from the list and the rotation moves on: one bad file in a
+  folder of seventy costs one clip, not the whole wallpaper. When nothing decodable is left, the
+  still picture takes the screen as it does for any other failure.
+- `wallpaper.mp4` stays Home's first frame and the fallback, whether or not `videos/` exists. A theme
+  without the folder behaves exactly as before, single file looping.
+
+The hand-over shows the still picture while the next clip is decoded, so a rotation cuts through the
+wallpaper rather than through black, and the decoder is never held open twice.
+
+Push them once, beside the theme's other files:
+
+    adb push my-theme/videos/. /sdcard/Android/data/<launcher package>/files/videos/
+
+Prefer 1080p: a 4K loop only costs decode headroom on a 1080p panel, and about 2 Mbit/s keeps a
+12-minute rotation under 200 MB.
+
 `themes/demo-video/` is a demo theme whose picture and video are generated (ffmpeg's `gradients` source), so this branch carries no third-party art.
 
 Measured on a Sony BRAVIA 4K VH22 (Google TV 12, MediaTek MT5835, 3 GB): about 30 MB PSS with a 1080p loop playing (about 22 MB with no wallpaper at all), scrolling 0.73 % janky / p90 8 ms, and Netflix → HOME round-trips and reboots all resume the loop.
