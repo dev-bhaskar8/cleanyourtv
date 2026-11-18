@@ -171,10 +171,9 @@ final class WallpaperVideo {
 
     private void prepare(Surface target) {
         if (closed || failed) return;
-        if (files.isEmpty() || target == null) {
-            giveUp();
-            return;
-        }
+        // No surface: the window is going away, and onSurfaceTextureAvailable prepares the clip when it
+        // comes back. Treated as a failure here it would end the video for the rest of the session.
+        if (files.isEmpty() || target == null) return;
         if (index < 0 || index >= files.size()) index = 0;
         File clip = files.get(index);
         try {
@@ -196,7 +195,9 @@ final class WallpaperVideo {
             });
             created.prepareAsync();
         } catch (IOException | RuntimeException failure) {
-            giveUp();
+            // setDataSource failed on this file (gone, unreadable): drop it like a decoder refusal rather
+            // than ending the video, so the next clip still gets its turn.
+            handOver(true);
         }
     }
 
@@ -226,6 +227,9 @@ final class WallpaperVideo {
         }
         setHidden(false);
         release();
+        // The window is gone mid hand-over: keep the picture, and onSurfaceTextureAvailable prepares the
+        // clip that is due when the view comes back.
+        if (surface == null) return;
         video.setVisibility(View.VISIBLE);
         if (dim != null) dim.setVisibility(View.VISIBLE);
         prepare(surface);
